@@ -1,5 +1,6 @@
 
 import './bootstrap.js';
+import './js/script.js';
 
 /*
  * Welcome to your app's main JavaScript file!
