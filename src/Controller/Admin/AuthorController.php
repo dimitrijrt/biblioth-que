@@ -30,9 +30,11 @@ final class AuthorController extends AbstractController
 
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
+            $manager->persist($author);
+            $manager->flush();
             
 
-           
+           return $this->redirectToRoute('app_admin_author');
         }
         
         return $this->render('admin/author/new.html.twig', [
