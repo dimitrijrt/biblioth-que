@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: BookRepository::class)]
 class Book
@@ -44,18 +45,18 @@ class Book
     /**
      * @var Collection<int, Author>
      */
-    #[ORM\ManyToMany(targetEntity: Author::class, inversedBy: 'books')]
-    private Collection $author;
+    #[ORM\ManyToMany(targetEntity: Author::class, mappedBy: 'books', cascade: ['persist'])]
+    private Collection $authors;
 
     /**
      * @var Collection<int, Comment>
      */
-    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'book')]
+    #[ORM\OneToMany(targetEntity: Comment::class, mappedBy: 'book',  orphanRemoval: true)]
     private Collection $comment;
 
     public function __construct()
     {
-        $this->author = new ArrayCollection();
+        $this->authors = new ArrayCollection();
         $this->comment = new ArrayCollection();
     }
 
@@ -163,15 +164,15 @@ class Book
     /**
      * @return Collection<int, Author>
      */
-    public function getAuthor(): Collection
+    public function getAuthors(): Collection
     {
-        return $this->author;
+        return $this->authors;
     }
 
     public function addAuthor(Author $author): static
     {
-        if (!$this->author->contains($author)) {
-            $this->author->add($author);
+        if (!$this->authors->contains($author)) {
+            $this->authors->add($author);
         }
 
         return $this;
@@ -179,7 +180,7 @@ class Book
 
     public function removeAuthor(Author $author): static
     {
-        $this->author->removeElement($author);
+        $this->authors->removeElement($author);
 
         return $this;
     }

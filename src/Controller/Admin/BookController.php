@@ -11,6 +11,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\BookRepository;
+use Pagerfanta\Doctrine\ORM\QueryAdapter;
+use Pagerfanta\Pagerfanta;
+
 
 #[Route('/admin/book')]
 class BookController extends AbstractController
@@ -19,16 +22,20 @@ class BookController extends AbstractController
     public function index(Request $request, BookRepository $repository): Response
     {
 
-         $books = $repository->findAll();
+          $books = Pagerfanta::createForCurrentPageWithMaxPerPage(
+            new QueryAdapter($repository->createQueryBuilder('b')),
+            $request->query->get('page', 1),
+            20
+        );
          
         return $this->render('admin/book/index.html.twig', [
-            'controller_name' => 'BookController',
             'books' => $books,
         ]);
     }
 
     #[Route('/new', name: 'app_admin_book_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $manager): Response
+    #[Route('/{id}/edit', name: 'app_admin_book_edit', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
+    public function new(?Book $book,Request $request, EntityManagerInterface $manager): Response
     {
         $book = new Book();
         $form = $this->createForm(BookType::class, $book);
@@ -50,7 +57,7 @@ class BookController extends AbstractController
     public function show(?Book $book): Response
     {
         return $this->render ('admin/book/show.html.twig', [
-            'book' => book,
+            'book' => $book,
         ]);
 
     }
