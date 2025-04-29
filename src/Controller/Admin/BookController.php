@@ -13,11 +13,15 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\BookRepository;
 use Pagerfanta\Doctrine\ORM\QueryAdapter;
 use Pagerfanta\Pagerfanta;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 
 #[Route('/admin/book')]
 class BookController extends AbstractController
+
 {
+     #[IsGranted('IS_AUTHENTICATED')]
     #[Route('', name: 'app_admin_book_index', methods: ['GET'])]
     public function index(Request $request, BookRepository $repository): Response
     {
@@ -37,13 +41,15 @@ class BookController extends AbstractController
     #[Route('/{id}/edit', name: 'app_admin_book_edit', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
     public function new(?Book $book,Request $request, EntityManagerInterface $manager): Response
     {
-        $book = new Book();
+        $book ??= new Book();
         $form = $this->createForm(BookType::class, $book);
 
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
             $manager->persist($book);
             $manager->flush();
+
+             return $this->redirectToRoute('app_admin_book_index');
             
         }
 
@@ -60,5 +66,16 @@ class BookController extends AbstractController
             'book' => $book,
         ]);
 
+    }
+
+    #[Route('/{id}', name: 'app_admin_book_delete', methods: ['POST'])]
+    public function delete(Book $book, Request $request, EntityManagerInterface $manager): RedirectResponse
+    {
+        if ($this->isCsrfTokenValid('delete' . $book->getId(), $request->request->get('_token'))) {
+            $manager->remove($book);
+            $manager->flush();
+        }
+
+        return $this->redirectToRoute('app_admin_book_index');
     }
 }

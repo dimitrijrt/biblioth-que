@@ -47,5 +47,10 @@
     {% endif %}
     <a href="{{ path('app_admin_book_index') }}" class="btn btn-primary">Retour</a>
     <a href="{{ path('app_admin_book_edit', {id: book.id}) }}" class="btn btn-warning">Éditer</a>
+    <form method="post" action="{{ path('app_admin_book_delete', {id: book.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce livre ?');">
+    <input type="hidden" name="_method" value="DELETE">
+    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ book.id) }}">
+    <button class="btn btn-danger">Supprimer</button>
+</form>
 </section>
 {% endblock %}
